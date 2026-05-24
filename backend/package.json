@@ -13,13 +13,21 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.4",
+    "openai": "^6.25.0",
+    "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.18.0",
     "pg": "^8.19.0",
-    "prisma": "^7.4.1"
+    "prisma": "^7.4.1",
+    "yt-search": "^2.13.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

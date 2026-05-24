@@ -15,26 +15,84 @@ model User {
   projects  Project[]
   jobs      Job[]    @relation("RecruiterJobs")
   createdAt DateTime @default(now())
+  otp        String?
+  isVerified Boolean @default(false)
+  warnings   Int      @default(0)
+  isBanned   Boolean  @default(false)
+  testResults TestResult[]
+  profile    UserProfile?
+  assessments CompanyAssessment[] @relation("RecruiterAssessments")
+  assessmentSubmissions AssessmentSubmission[] @relation("CandidateSubmissions")
+  jobApplications JobApplication[] @relation("CandidateJobApplications")
+  companyProfile CompanyProfile? @relation("RecruiterProfile")
+}
+
+model UserProfile {
+  id              String   @id @default(uuid())
+  githubUrl       String?
+  linkedinUrl     String?
+  xUrl            String?
+  resumeUrl       String?
+  scrapedInfo     Json?    // Stores name, email, reposCount etc.
+  securityReport  Json?    // Stores the overall cyber security analyst report
+  projectsAnalysis Json?   // Stores detailed GitHub repo analysis
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @unique
+  updatedAt       DateTime @updatedAt
+}
+
+model CompanyProfile {
+  id              String   @id @default(uuid())
+  companyName     String?
+  location        String?
+  website         String?
+  linkedinUrl     String?
+  xUrl            String?
+  description     String?
+  notificationsOn Boolean  @default(true)
+  user            User     @relation("RecruiterProfile", fields: [userId], references: [id])
+  userId          String   @unique
+  updatedAt       DateTime @updatedAt
 }
 
 model Project {
-  id        String   @id @default(uuid())
-  title     String
-  githubUrl String
-  techStack String[]
-  score     Int      @default(0)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  createdAt DateTime @default(now())
+  id                String   @id @default(uuid())
+  title             String
+  githubUrl         String
+  techStack         String[]
+  score             Int      @default(0)
+  intelligenceScore Int?
+  securityScore     Int?
+  complexity        String?
+  aiSummary         String?
+  domains           String[]
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String
+  createdAt         DateTime @default(now())
 }
 
 model Job {
+  id              String   @id @default(uuid())
+  title           String
+  description     String
+  requiredSkills  String[]
+  location        String?
+  salaryRange     String?
+  jobType         String?
+  experienceLevel String?
+  domain          String?
+  recruiter       User     @relation("RecruiterJobs", fields: [recruiterId], references: [id])
+  recruiterId     String
+  applications    JobApplication[]
+  createdAt       DateTime @default(now())
+}
+
+model JobApplication {
   id          String   @id @default(uuid())
-  title       String
-  description String
-  requiredSkills String[]
-  recruiter   User     @relation("RecruiterJobs", fields: [recruiterId], references: [id])
-  recruiterId String
+  job         Job      @relation(fields: [jobId], references: [id])
+  jobId       String
+  candidate   User     @relation("CandidateJobApplications", fields: [candidateId], references: [id])
+  candidateId String
   createdAt   DateTime @default(now())
 }
 
@@ -42,4 +100,41 @@ enum Role {
   candidate
   recruiter
   admin
+}
+
+model TestResult {
+  id          String   @id @default(uuid())
+  domain      String
+  testCategory String  // "easy", "medium", "hard"
+  score       Int      @default(0)
+  timeTaken   Int      @default(0) // time in seconds
+  status      String   @default("completed") // "completed", "cheated", "in_progress"
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime @default(now())
+}
+
+model CompanyAssessment {
+  id              String   @id @default(uuid())
+  title           String
+  type            String   // "Test", "Project", "Hackathon"
+  domain          String
+  problemStatement String
+  recruiter       User     @relation("RecruiterAssessments", fields: [recruiterId], references: [id])
+  recruiterId     String
+  submissions     AssessmentSubmission[]
+  createdAt       DateTime @default(now())
+}
+
+model AssessmentSubmission {
+  id              String   @id @default(uuid())
+  assessment      CompanyAssessment @relation(fields: [assessmentId], references: [id])
+  assessmentId    String
+  candidate       User     @relation("CandidateSubmissions", fields: [candidateId], references: [id])
+  candidateId     String
+  githubUrl       String?
+  fileUrl         String?  // for uploaded zip/files
+  aiSecurityReport Json?   // The detailed AI authenticity & originality report
+  score           Int?
+  createdAt       DateTime @default(now())
 }
